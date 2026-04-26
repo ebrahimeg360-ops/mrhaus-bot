@@ -1,23 +1,20 @@
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
-    });
-  }
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { messages } = await req.json();
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -27,25 +24,22 @@ export default async function handler(req) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 300,
-        system: 'You are Mr.Haus Bot, the official AI assistant for MR HAUS LUXURY Real Estate Dubai. You are a world-class Dubai real estate expert. Keep responses under 120 words. Use bullet points for lists. Respond in the same language the user writes in. Always offer to connect with a specialist.',
-        messages: messages
-      })
+        system: 'You are Mr.Haus Bot, AI assistant for MR HAUS LUXURY Real Estate Dubai. Expert in Dubai property market. Keep responses under 120 words. Use bullet points. Respond in the same language as user. Always offer to connect with a specialist.',
+        messages
+      }),
     });
-    const data = await response.json();
-    const reply = data.content?.[0]?.text || 'Sorry, please try again.';
+
+    const data = await res.json();
+    const reply = data?.content?.[0]?.text ?? 'Sorry, please try again.';
+
     return new Response(JSON.stringify({ reply }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
+
+  } catch (err) {
     return new Response(JSON.stringify({ reply: 'Connection error. Please try again.' }), {
       status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 }
