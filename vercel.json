@@ -3,5 +3,6 @@
     "api/chat.js": {
       "runtime": "edge"
     }
-  }
+  },
+  "version": 2
 }
