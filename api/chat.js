@@ -17,7 +17,6 @@ export default async function handler(req) {
 
   try {
     const { messages } = await req.json();
-
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -28,21 +27,18 @@ export default async function handler(req) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 300,
-        system: `You are Mr.Haus Bot, the official AI assistant for MR HAUS LUXURY Real Estate Dubai (luxurymrhaus.ae). You are a world-class Dubai real estate expert. Your personality: Professional, warm, bilingual Arabic/English, concise. Keep responses under 120 words. Use bullet points for lists. Respond in the same language the user writes in. Always end offering to connect with a specialist.`,
+        system: 'You are Mr.Haus Bot, the official AI assistant for MR HAUS LUXURY Real Estate Dubai. You are a world-class Dubai real estate expert. Keep responses under 120 words. Use bullet points for lists. Respond in the same language the user writes in. Always offer to connect with a specialist.',
         messages: messages
       })
     });
-
     const data = await response.json();
     const reply = data.content?.[0]?.text || 'Sorry, please try again.';
-
     return new Response(JSON.stringify({ reply }), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
       }
     });
-
   } catch (error) {
     return new Response(JSON.stringify({ reply: 'Connection error. Please try again.' }), {
       status: 500,
